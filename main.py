@@ -58,14 +58,23 @@ else:
 last = time.time()
 last_buttons = {key: False for key in get_buttons()}
 dt = 0.0
+Disabled = False
 while True:
-    buttons = get_buttons()
-    (LX, LY), _ = get_joysticks()
-    pyautogui.move(LX * 50, LY * -50)
-    if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
-        pyautogui.hotkey('ctrl','win','o')
+    if Disabled == False:
+        buttons = get_buttons()
+        (LX, LY), _ = get_joysticks()
+        pyautogui.move(LX * 50, LY * -50)
+        if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
+            pyautogui.hotkey('ctrl','win','o')
+        if buttons["START"] and buttons["LEFT_SHOULDER"] and (not(last_buttons["START"] and last_buttons["LEFT_SHOULDER"])):
+            Disabled = True
+            
 
-    dt = time.time() - last
-    last = time.time()    
-    last_buttons = buttons
-    
+
+        dt = time.time() - last
+        last = time.time()
+        last_buttons = buttons
+    buttons = get_buttons()
+    if buttons["START"] and buttons["LEFT_SHOULDER"] and (last_buttons["START"] and buttons["LEFT_SHOULDER"]):
+        Disabled = False
+        
