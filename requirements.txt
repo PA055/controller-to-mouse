@@ -1,2 +1,3 @@
 XInput-Python
 pyautogui
+opencv
