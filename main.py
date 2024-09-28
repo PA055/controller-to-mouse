@@ -1,28 +1,59 @@
 import XInput
 import pyautogui
+import keyboard
 import time
+ 
+
+def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
+    if controller_index >= 0:
+        return XInput.get_thumb_values(XInput.get_state(controller_index))
+    
+    x_axis = keyboard.is_pressed("right") - keyboard.is_pressed("left")
+    y_axis = keyboard.is_pressed("up") - keyboard.is_pressed("down")
+    return (x_axis, y_axis), (0, 0)
+
+def get_buttons() -> dict[str, bool]:
+    if controller_index >= 0: 
+        return XInput.get_button_values(XInput.get_state(controller_index))
+    
+    return {
+        "DPAD_UP": keyboard.is_pressed('w'),
+        "DPAD_LEFT": keyboard.is_pressed('a'),
+        "DPAD_DOWN": keyboard.is_pressed('s'),
+        "DPAD_RIGHT": keyboard.is_pressed('d'),
+        "START": keyboard.is_pressed('='),
+        "BACK": keyboard.is_pressed('-'),
+        "LEFT_THUMB": keyboard.is_pressed('/'),
+        "RIGHT_THUMB": keyboard.is_pressed('.'),
+        "LEFT_SHOULDER": keyboard.is_pressed('q'),
+        "RIGHT_SHOULDER": keyboard.is_pressed('e'),
+        "A": keyboard.is_pressed('k'),
+        "B": keyboard.is_pressed('l'),
+        "X": keyboard.is_pressed('j'),
+        "Y": keyboard.is_pressed('i')
+    }
 
 controller_index = -1
-print("checking for connected controllers...")
+print("Checking for connected controllers...")
 
 for _ in range(50):
     if any(XInput.get_connected()): break
     time.sleep(0.1)
 if not any(XInput.get_connected()): 
     print("Failed to connect, try again later")
-    exit(1)
-controller_index = XInput.get_connected().index(True)
+    # exit(1)
+else:
+    print("Connected.")
+    controller_index = XInput.get_connected().index(True)
 
 last = time.time()
-last_buttons = {"DPAD_DOWN": False}
+last_buttons = {key: False for key in get_buttons()}
 dt = 0.0
 while True:
-    state = XInput.get_state(controller_index)
-    buttons = XInput.get_button_values(state)
-    (LX, LY), _ = XInput.get_thumb_values(state)
+    buttons = get_buttons()
+    (LX, LY), _ = get_joysticks()
     pyautogui.move(LX * 50, LY * -50)
-    if (not last_buttons["DPAD_DOWN"]) and buttons["DPAD_DOWN"]:
-        print('test')
+    if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
         pyautogui.hotkey('ctrl','win','o')
 
     dt = time.time() - last
