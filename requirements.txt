@@ -1,4 +1,4 @@
 XInput-Python
-pyautogui
+mouse
 opencv-python
 keyboard

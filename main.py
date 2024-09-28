@@ -1,12 +1,13 @@
 import XInput
-import pyautogui
+import mouse
 import keyboard
 import time
  
- 
+sensitivity = 20
 keyboard_map = [
     [0.051] * 13 + [0.096, 0.061, 0.061, 0.065],
     [0.077] + [0.051] * 13 + [0.063, 0.061, 0.061, 0.065],
+    [0.103]
 ]
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
@@ -61,14 +62,16 @@ dt = 0.0
 while True:
     buttons = get_buttons()
     LT, RT = get_triggers()
-    (LX, LY), _ = get_joysticks()
-    pyautogui.move(LX * 50, LY * -50)
+    (LX, LY), (RX, RY) = get_joysticks()
+    
+    mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=0.01)
     if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
-        pyautogui.hotkey('ctrl','win','o')
+        keyboard.send('ctrl+win+o')
     if LT > .3:
-        pyautogui.click(button = 'right')
+        mouse.click(button = 'right')
     if RT > .3:
-        pyautogui.click(button = 'left')
+        mouse.click(button = 'left')
+        
     dt = time.time() - last
     last = time.time()    
     last_buttons = buttons
