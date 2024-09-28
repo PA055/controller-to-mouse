@@ -60,11 +60,15 @@ last_buttons = {key: False for key in get_buttons()}
 dt = 0.0
 while True:
     buttons = get_buttons()
+    LT, RT = get_triggers()
     (LX, LY), _ = get_joysticks()
     pyautogui.move(LX * 50, LY * -50)
     if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
         pyautogui.hotkey('ctrl','win','o')
-
+    if LT > .3:
+        pyautogui.click(button = 'right')
+    if RT > .3:
+        pyautogui.click(button = 'left')
     dt = time.time() - last
     last = time.time()    
     last_buttons = buttons
