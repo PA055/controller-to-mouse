@@ -72,10 +72,15 @@ while True:
     (LX, LY), (RX, RY) = get_joysticks()
     if mode == 'enabled':
         mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=0.01)
+        if RY != 0: mouse.wheel(RY)
+        if RX != 0:
+            keyboard.press("SHIFT")
+            mouse.wheel(-RX)
+            keyboard.release("SHIFT")
         
     if mode == 'keyboard' and not keyboard_open:
         pass
-        
+
     if mode != 'disabled':
         if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
             keyboard.send('ctrl+win+o')
@@ -84,7 +89,7 @@ while True:
         
         if LT > .3: mouse.click(button = 'right')
         if RT > .3: mouse.click(button = 'left')
-
+        
     if buttons["START"] and buttons["LEFT_SHOULDER"] and not (last_buttons["START"] and last_buttons["LEFT_SHOULDER"]):
         mode = 'enabled' if mode == 'disabled' else 'disabled'
     
