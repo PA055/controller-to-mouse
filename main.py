@@ -63,6 +63,7 @@ else:
 
 last = time.time()
 last_buttons = {key: False for key in get_buttons()}
+last_triggers = (0.0, 0.0)
 dt = 0.0
 mode = 'enabled'
 keyboard_open = False
@@ -87,8 +88,15 @@ while True:
             keyboard_open = False
             mode = 'enabled' if mode == 'keyboard' else 'keyboard'
         
-        if LT > .3: mouse.click(button = 'right')
-        if RT > .3: mouse.click(button = 'left')
+        if LT > .3 and last_triggers[0] < .3: 
+            mouse.press('right')
+        if LT < .3 and last_triggers[0] > .3:
+            mouse.release('right')
+            
+        if RT > .3 and last_triggers[1] < .3:
+            mouse.press('left')
+        if RT < .3 and last_triggers[1] > .3:
+            mouse.release('left')
         
     if buttons["START"] and buttons["LEFT_SHOULDER"] and not (last_buttons["START"] and last_buttons["LEFT_SHOULDER"]):
         mode = 'enabled' if mode == 'disabled' else 'disabled'
@@ -96,4 +104,5 @@ while True:
     dt = time.time() - last
     last = time.time()
     last_buttons = buttons
+    last_triggers = (LT, RT)
         

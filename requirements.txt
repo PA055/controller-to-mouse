@@ -1,4 +1,5 @@
 XInput-Python
 mouse
-opencv-python
 keyboard
+cx_Freeze
+pywin32
