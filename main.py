@@ -4,29 +4,34 @@ import keyboard
 import time
  
 sensitivity = 20
+key_height = 0.165
 keyboard_map = [
-    [0.051] * 13 + [0.096, 0.061, 0.061, 0.065],
-    [0.077] + [0.051] * 13 + [0.063, 0.061, 0.061, 0.065],
-    [0.103]
+    [0.051] * 13 + [0.096, 0.061, 0.065, 0.061],
+    [0.077] + [0.051] * 13 + [0.070, 0.061, 0.065, 0.061],
+    [0.103] + [0.051] * 11 + [0.146, 0.061, 0.065, 0.061],
+    [0.129] + [0.051] * 11 + [0.120, 0.061, 0.065, 0.061],
+    [0.051] * 3 + [0.284] + [0.051] * 5 + [0.067, 0.061, 0.065, 0.061],
 ]
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
     if controller_index >= 0:
         return XInput.get_thumb_values(XInput.get_state(controller_index))
     
-    x_axis = keyboard.is_pressed("right") - keyboard.is_pressed("left")
-    y_axis = keyboard.is_pressed("up") - keyboard.is_pressed("down")
-    return (x_axis, y_axis), (0, 0)
+    lx_axis = keyboard.is_pressed("right") - keyboard.is_pressed("left")
+    ly_axis = keyboard.is_pressed("up") - keyboard.is_pressed("down")
+    rx_axis = keyboard.is_pressed("d") - keyboard.is_pressed("a")
+    ry_axis = keyboard.is_pressed("w") - keyboard.is_pressed("s")
+    return (lx_axis, ly_axis), (rx_axis, ry_axis)
 
 def get_buttons() -> dict[str, bool]:
     if controller_index >= 0: 
         return XInput.get_button_values(XInput.get_state(controller_index))
     
     return {
-        "DPAD_UP": keyboard.is_pressed('w'),
-        "DPAD_LEFT": keyboard.is_pressed('a'),
-        "DPAD_DOWN": keyboard.is_pressed('s'),
-        "DPAD_RIGHT": keyboard.is_pressed('d'),
+        "DPAD_UP": keyboard.is_pressed('t'),
+        "DPAD_LEFT": keyboard.is_pressed('f'),
+        "DPAD_DOWN": keyboard.is_pressed('g'),
+        "DPAD_RIGHT": keyboard.is_pressed('h'),
         "START": keyboard.is_pressed('='),
         "BACK": keyboard.is_pressed('-'),
         "LEFT_THUMB": keyboard.is_pressed('/'),
@@ -59,22 +64,29 @@ else:
 last = time.time()
 last_buttons = {key: False for key in get_buttons()}
 dt = 0.0
-disabled = False
+mode = 'enabled'
+keyboard_open = False
 while True:
     buttons = get_buttons()
     LT, RT = get_triggers()
     (LX, LY), (RX, RY) = get_joysticks()
-    if not disabled:
+    if mode == 'enabled':
         mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=0.01)
         
+    if mode == 'keyboard' and not keyboard_open:
+        pass
+        
+    if mode != 'disabled':
         if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
             keyboard.send('ctrl+win+o')
+            keyboard_open = False
+            mode = 'enabled' if mode == 'keyboard' else 'keyboard'
         
         if LT > .3: mouse.click(button = 'right')
         if RT > .3: mouse.click(button = 'left')
 
     if buttons["START"] and buttons["LEFT_SHOULDER"] and not (last_buttons["START"] and last_buttons["LEFT_SHOULDER"]):
-        disabled = False
+        mode = 'enabled' if mode == 'disabled' else 'disabled'
     
     dt = time.time() - last
     last = time.time()
