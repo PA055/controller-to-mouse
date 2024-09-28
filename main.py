@@ -3,6 +3,11 @@ import pyautogui
 import keyboard
 import time
  
+ 
+keyboard_map = [
+    [0.051] * 13 + [0.096, 0.061, 0.061, 0.065],
+    
+]
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
     if controller_index >= 0:
@@ -32,6 +37,10 @@ def get_buttons() -> dict[str, bool]:
         "X": keyboard.is_pressed('j'),
         "Y": keyboard.is_pressed('i')
     }
+
+def get_triggers() -> tuple[float, float]:
+    if controller_index >= 0: return XInput.get_trigger_values(XInput.get_state(controller_index))
+    return 1 if keyboard.is_pressed('x') else 0, 1 if keyboard.is_pressed('c') else 0
 
 controller_index = -1
 print("Checking for connected controllers...")
