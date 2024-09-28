@@ -59,20 +59,24 @@ else:
 last = time.time()
 last_buttons = {key: False for key in get_buttons()}
 dt = 0.0
+disabled = False
 while True:
-    buttons = get_buttons()
-    LT, RT = get_triggers()
-    (LX, LY), (RX, RY) = get_joysticks()
-    
-    mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=0.01)
-    if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
-        keyboard.send('ctrl+win+o')
-    if LT > .3:
-        mouse.click(button = 'right')
-    if RT > .3:
-        mouse.click(button = 'left')
+        buttons = get_buttons()
+    if not disabled:
+        LT, RT = get_triggers()
+        (LX, LY), _ = get_joysticks()
         
-    dt = time.time() - last
-    last = time.time()    
-    last_buttons = buttons
-    
+        mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=0.01)
+        
+        if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
+            keyboard.send('ctrl+win+o')
+        
+        if LT > .3: mouse.click(button = 'right')
+        if RT > .3: mouse.click(button = 'left')
+
+        dt = time.time() - last
+        last = time.time()
+        last_buttons = buttons
+    if buttons["START"] and buttons["LEFT_SHOULDER"] and (last_buttons["START"] and buttons["LEFT_SHOULDER"]):
+        disabled = False
+        
