@@ -6,7 +6,7 @@ import time
  
 keyboard_map = [
     [0.051] * 13 + [0.096, 0.061, 0.061, 0.065],
-    
+    [0.077] + [0.051] * 13 + [0.063, 0.061, 0.061, 0.065],
 ]
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
