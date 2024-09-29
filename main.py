@@ -92,7 +92,6 @@ def keyboard_controls():
                 trigger = "new_press"
                 threshold = 0.5
                 args = ()
-                # death
                 
             if result in ['\\left_mouse', '\\right_mouse', '\\middle_mouse']:
                 if get_keys_active(keys, "new_press", args): mouse.press(result[1:-6])
