@@ -88,7 +88,7 @@ def keyboard_controls():
                     args = (float(config.get("start_delay", 0.5)), float(config.get("repeat_delay", 0.1)))
                 else: args = ()
             else:
-                results = binding.lower()
+                results = binding
                 trigger = "new_press"
                 threshold = 0.5
                 args = ()
@@ -288,7 +288,7 @@ def normal_keybinds():
                 args = (float(config.get("start_delay", 0.5)), float(config.get("repeat_delay", 0.1)))
             else: args = ()
         else:
-            results = binding.lower()
+            results = binding
             trigger = "new_press"
             threshold = 0.5
             args = ()

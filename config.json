@@ -17,12 +17,13 @@
             "hold_threshold": 0.2 
         },
         "Y": "backspace",
-        "B": "ctrl+z",
+        "B": "x",
         "L2": {
             "result": "alt",
             "trigger": "hold"
         },
-        "RIGHT": "tab"
+        "RIGHT": "tab",
+        "LEFT": ["windows", "\\type celeste", "enter"]
     },
     "keyboard_bindings": {
         "R1": "\\left_click",
