@@ -1,0 +1,59 @@
+{
+    "mouse_sensitivity": 20,
+    "scroll_sensitivity": 0.5,
+    "disable_binding": "UP+START",
+    "enable_binding": "UP+START",
+    "mouse_joystick": "left",
+    "scroll_joystick": "right",
+    "bindings": {
+        "L1": "\\right_click",
+        "R1": "\\left_mouse",
+        "DOWN+START": "\\keyboard_toggle",
+        "L2": "ctrl+a",
+        "R2": {
+            "result": "\\type hello world!",
+            "trigger": "long_press",
+            "threshold": 0.9,
+            "hold_threshold": 0.5 
+        }
+    },
+    "keyboard_bindings": {
+        "R1": "\\left_click",
+        "A": "\\left_click", 
+        "B": "backspace",
+        "X": "space",
+        "Y": "enter",
+        "UP": "\\up",
+        "DOWN": "\\down",
+        "LEFT": "\\left",
+        "RIGHT": "\\right",
+        "RIGHT_JOYSTICK_UP": {
+            "result": "up",
+            "trigger": "repeat",
+            "threshold": 0.8,
+            "start_delay": 0.3,
+            "repeat_delay": 0.1
+        },
+        "RIGHT_JOYSTICK_DOWN": {
+            "result": "down",
+            "trigger": "repeat",
+            "threshold": 0.8,
+            "start_delay": 0.3,
+            "repeat_delay": 0.1
+        },
+        "RIGHT_JOYSTICK_LEFT": {
+            "result": "left",
+            "trigger": "repeat",
+            "threshold": 0.8,
+            "start_delay": 0.3,
+            "repeat_delay": 0.1
+        },
+        "RIGHT_JOYSTICK_RIGHT": {
+            "result": "right",
+            "trigger": "repeat",
+            "threshold": 0.8,
+            "start_delay": 0.3,
+            "repeat_delay": 0.1
+        }
+    }
+}

@@ -8,6 +8,7 @@ import win32gui
 import contextlib
 import button
 from utils import *
+from config import config
 
 last = time.time()
 dt = .0
@@ -16,9 +17,6 @@ mode = 'enabled'
 keyboard_open_time = 0.5
 keyboard_win: Any = None
 mouse_pos = [0, 0]
-
-
-sensitivity = 20
 keyboard_map = [
     ([.03866, .107388, .168385, .235395, .297251, .358247, .421821, .481959, .548969, .610825, .67268, .74055, .802405, .867698, .945876], .2292042), 
     ([.056701, .135739, .20189, .261168, .325601, .390893, .454467, .518041, .580756, .645189, .707904, .771478, .835052, .898625, .962199], .3705943), 
@@ -59,7 +57,7 @@ def snap_keyboard(pos: tuple[int, int]) -> tuple[int, int]:
     return x_index, y_index
     
 def keyboard_controls():
-    global mouse_pos, mode
+    global mouse_pos, mode, keyboard_open_time
     try: keyboard_win_rect = win32gui.GetWindowRect(keyboard_win)
     except Exception: mode = 'enabled'; return
     width, height = keyboard_win_rect[2] - keyboard_win_rect[0], keyboard_win_rect[3] - keyboard_win_rect[1]
@@ -72,7 +70,6 @@ def keyboard_controls():
         mouse_pos = [key_x, key_y]
         
         mouse.move(key_x, key_y)
-        if button.A.get_new_press(): mouse.click()
         
         if button.LEFT_JOYSTICK_UP.get_repeated_new_press() or button.LEFT_JOYSTICK_DOWN.get_repeated_new_press() or \
            button.LEFT_JOYSTICK_LEFT.get_repeated_new_press() or button.LEFT_JOYSTICK_RIGHT.get_repeated_new_press(): 
@@ -80,79 +77,244 @@ def keyboard_controls():
             mouse_pos[1] -= joysticks[0][1] * 0.9 * keyboard_map[0][1] * height
             mouse.move(*mouse_pos)
         
-        if button.B.get_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[0][0][14] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[0][1] * (height)) + 30
-            )
-            mouse.click()
-        
-        if button.Y.get_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[4][0][4] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
-            )
-            mouse.click()
-        
-        if button.X.get_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[3][0][0] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[3][1] * (height)) + 30
-            )
-            mouse.click()
+        for keys, binding in config.get("keyboard_bindings", {}).items():
+            if isinstance(binding, dict):
+                result = binding.get("result", '').lower()
+                trigger = binding.get("trigger", "new_press").lower()
+                threshold = float(binding.get("threshold", 0.5)) # TODO make threshold work here
+                if trigger in ["long_press", "short_release", "long_release"]:
+                    args = (float(config.get("hold_threshold", 0.75)),)
+                elif trigger == 'repeat':
+                    args = (float(config.get("start_delay", 0.5)), float(config.get("repeat_delay", 0.1)))
+                else: args = ()
+            else:
+                result = binding.lower()
+                trigger = "new_press"
+                threshold = 0.5
+                args = ()
+                # death
+                
+            if result in ['\\left_mouse', '\\right_mouse', '\\middle_mouse']:
+                if get_keys_active(keys, "new_press", args): mouse.press(result[1:-6])
+                if get_keys_active(keys, "release", args): mouse.release(result[1:-6])
+
+
+            if result == '\\up' and get_keys_active(keys, trigger, args):
+                mouse_pos[1] -= 0.9 * keyboard_map[0][1] * height
+                mouse.move(*mouse_pos)
             
-        if button.UP.get_repeated_new_press() or button.RIGHT_JOYSTICK_UP.get_repeated_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[3][0][11] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[3][1] * (height)) + 30
-            )
-            mouse.click()
+            if result == '\\down' and get_keys_active(keys, trigger, args):
+                mouse_pos[1] += 0.9 * keyboard_map[0][1] * height
+                mouse.move(*mouse_pos)
             
-        if button.LEFT.get_repeated_new_press() or button.RIGHT_JOYSTICK_LEFT.get_repeated_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[4][0][7] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
-            )
-            mouse.click()
+            if result == '\\left' and get_keys_active(keys, trigger, args):
+                mouse_pos[0] -= (width - 214) * (.5 * ((keyboard_map[i_y][0][i_x] - keyboard_map[i_y][0][i_x - 1]) if i_x > 0 else keyboard_map[i_y][0][i_x]) + 0.5 * ((keyboard_map[i_y][0][i_x + 1] - keyboard_map[i_y][0][i_x]) if i_x < len(keyboard_map[i_y][0]) - 1 else keyboard_map[i_y][0][0]))
+                mouse.move(*mouse_pos)
             
-        if button.DOWN.get_repeated_new_press() or button.RIGHT_JOYSTICK_DOWN.get_repeated_new_press():
-            mouse.move(
-                keyboard_win_rect[0] + (keyboard_map[4][0][8] * (width - 214)),
-                keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
-            )
-            mouse.click()
+            if result == '\\right' and get_keys_active(keys, trigger, args):
+                mouse_pos[0] += (width - 214) * (.5 * ((keyboard_map[i_y][0][i_x] - keyboard_map[i_y][0][i_x - 1]) if i_x > 0 else keyboard_map[i_y][0][i_x]) + 0.5 * ((keyboard_map[i_y][0][i_x + 1] - keyboard_map[i_y][0][i_x]) if i_x < len(keyboard_map[i_y][0]) - 1 else keyboard_map[i_y][0][0]))
+                mouse.move(*mouse_pos)
             
-        if button.RIGHT.get_repeated_new_press() or button.RIGHT_JOYSTICK_RIGHT.get_repeated_new_press():
+            
+            if result == '\\shift' and get_keys_active(keys, trigger, args):
                 mouse.move(
-                    keyboard_win_rect[0] + (keyboard_map[4][0][9] * (width - 214)),
+                    keyboard_win_rect[0] + (keyboard_map[3][0][0] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[3][1] * (height)) + 30
+                )
+                mouse.click()
+            
+            if result == '\\fn' and get_keys_active(keys, trigger, args):
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][0] * (width - 214)),
                     keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
                 )
                 mouse.click()
-
+            
+            if result == '\\ctrl' and get_keys_active(keys, trigger, args):
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][1] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+            
+            if result == '\\win' and get_keys_active(keys, trigger, args):
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][2] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+            
+            if result == '\\alt' and get_keys_active(keys, trigger, args):
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][3] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+                
+                
+            if result == '\\keyboard_toggle' and get_keys_active(keys, trigger, args):
+                keyboard.send('ctrl+win+o')
+                keyboard_open_time = 0.5
+                mode = 'enabled' if mode == 'keyboard' else 'keyboard'
+                
+            if result == '\\keyboard_enable' and mode == 'enabled' and get_keys_active(keys, trigger, args):
+                keyboard.send('ctrl+win+o')
+                keyboard_open_time = 0.5
+                mode = 'keyboard'
+            
+            if result == '\\keyboard_disable' and mode == 'keyboard' and get_keys_active(keys, trigger, args):
+                keyboard.send('ctrl+win+o')
+                keyboard_open_time = 0.5
+                mode = 'enable'
+                
+            if get_keys_active(keys, trigger, args):
+                parse_result(result)
+            
     else:
-        mouse.move(joysticks[0][0] * sensitivity, joysticks[0][1] * -sensitivity, absolute=False, duration=.01)
-        mouse.wheel(joysticks[1][1])
-        if joysticks[1][0] != 0:
-            keyboard.press("shift")
-            mouse.wheel(-joysticks[1][0])
-            keyboard.release("shift")
+        normal_keybinds()
         if mouse.get_position()[0] > keyboard_win_rect[0] and \
            mouse.get_position()[0] < keyboard_win_rect[2] - 220 and \
            mouse.get_position()[1] > keyboard_win_rect[1] + 80 and \
            mouse.get_position()[1] < keyboard_win_rect[3]:
             mouse_pos = list(mouse.get_position())
-                
+
+def get_keys_active(keys: str, function: str = 'new_press', args: tuple = ()) -> bool:
+    if function == 'new_press':
+        return all(
+            button.buttons[btn.strip().upper()].get_pressed() or 
+            button.buttons[btn.strip().upper()].get_new_press() 
+            for btn in keys.split('+')
+        ) and any(
+            button.buttons[btn.strip().upper()].get_new_press() 
+            for btn in keys.split('+')
+        ) 
+    if function == 'pressed':
+        return all(button.buttons[btn.strip().upper()].get_pressed() for btn in keys.split('+'))
+    if function == 'long_press':
+        return all(
+            button.buttons[btn.strip().upper()].get_long_pressed(*args) or 
+            button.buttons[btn.strip().upper()].get_new_long_press(*args) 
+            for btn in keys.split('+')
+        ) and any(
+            button.buttons[btn.strip().upper()].get_new_long_press(*args) 
+            for btn in keys.split('+')
+        )        
+               
+    if function == 'release':
+        return all(
+            button.buttons[btn.strip().upper()].get_pressed() or 
+            button.buttons[btn.strip().upper()].get_release() 
+            for btn in keys.split('+')
+        ) and any(
+            button.buttons[btn.strip().upper()].get_release() 
+            for btn in keys.split('+')
+        )
+    if function == 'short_release':
+        return all(
+            button.buttons[btn.strip().upper()].get_short_release(*args) or (
+                button.buttons[btn.strip().upper()].get_pressed() and 
+                not button.buttons[btn.strip().upper()].get_long_pressed(*args)
+            ) 
+            for btn in keys.split('+')
+        ) and any(
+            button.buttons[btn.strip().upper()].get_short_release(*args) 
+            for btn in keys.split('+') 
+        )
+    if function == 'long_release':
+        return all (
+            button.buttons[btn.strip().upper()].get_long_release(*args) or 
+            button.buttons[btn.strip().upper()].get_long_pressed(*args)
+            for btn in keys.split('+')
+        ) and any(
+            button.buttons[btn.strip().upper()].get_long_release(*args)
+            for btn in keys.split('+')
+        )
+    
+    if function == 'repeat':
+        return button.buttons[keys.split('+')[0].strip().upper()].get_repeated_new_press(*args) and \
+               all(button.buttons[btn.strip().upper()].get_pressed() for btn in keys.split('+'))
+    
+    return False
+
+def parse_result(result):
+    if result[0] == '\\':
+        if result == '\\right_click': mouse.click('right')
+        if result == '\\right_press': mouse.press('right')
+        if result == '\\right_release': mouse.release('right')
+        
+        if result == '\\middle_click': mouse.click('middle')
+        if result == '\\middle_press': mouse.press('middle')
+        if result == '\\middle_release': mouse.release('middle')
+        
+        if result == '\\left_click': mouse.click('left')
+        if result == '\\left_press': mouse.press('left')
+        if result == '\\left_release': mouse.release('left')
+        
+        if result.startswith('\\type '): keyboard.write(result[6:])
+        
+    else:
+        keyboard.send(result)
+
+def normal_keybinds():
+    global mode
+    joysticks = get_joysticks()
+    moveJoystick = joysticks[0 if config.get("mouse_joystick", 'left').lower() == "left" else 1]
+    scrollJoystick = joysticks[0 if config.get("scroll_joystick", 'right').lower() == "left" else 1]
+    
+    mouse.move(
+        moveJoystick[0] * config.get("mouse_sensitivity", 20), 
+        moveJoystick[1] * -config.get("mouse_sensitivity", 20), 
+        absolute=False, duration=.01
+    )
+    mouse.wheel(scrollJoystick[1] * config.get("scroll_sensitivity", 10))
+    if joysticks[1][0] != 0:
+        keyboard.press("shift")
+        mouse.wheel(-scrollJoystick[0] * config.get("scroll_sensitivity", 10))
+        keyboard.release("shift")
+
+    for keys, binding in config.get("bindings", {}).items():
+        if isinstance(binding, dict):
+            result = binding.get("result", '').lower()
+            trigger = binding.get("trigger", "new_press").lower()
+            threshold = float(binding.get("threshold", 0.5)) # TODO make threshold work here
+            if trigger.lower() in ["long_press", "short_release", "long_release"]:
+                args = (float(config.get("hold_threshold", 0.75)),)
+            elif trigger.lower() == 'repeat':
+                args = (float(config.get("start_delay", 0.5)), float(config.get("repeat_delay", 0.1)))
+            else: args = ()
+        else:
+            result = binding.lower()
+            trigger = "new_press"
+            threshold = 0.5
+            args = ()
+            
+        if result in ['\\left_mouse', '\\right_mouse', '\\middle_mouse']:
+            if get_keys_active(keys, "new_press", args): mouse.press(result[1:-6])
+            if get_keys_active(keys, "release", args): mouse.release(result[1:-6])
+            
+        if result == '\\keyboard_toggle' and get_keys_active(keys, trigger, args):
+            keyboard.send('ctrl+win+o')
+            keyboard_open_time = 0.5
+            mode = 'enabled' if mode == 'keyboard' else 'keyboard'
+            
+        if result == '\\keyboard_enable' and mode == 'enabled' and get_keys_active(keys, trigger, args):
+            keyboard.send('ctrl+win+o')
+            keyboard_open_time = 0.5
+            mode = 'keyboard'
+        
+        if result == '\\keyboard_disable' and mode == 'keyboard' and get_keys_active(keys, trigger, args):
+            keyboard.send('ctrl+win+o')
+            keyboard_open_time = 0.5
+            mode = 'enable'
+            
+        if get_keys_active(keys, trigger, args):
+            parse_result(result)
+   
 def controller_loop():
     global last, dt, mode, keyboard_open_time, keyboard_win
     button.update_all()
-    joysticks = get_joysticks()
     if mode == 'enabled':
-        mouse.move(joysticks[0][0] * sensitivity, joysticks[0][1] * -sensitivity, absolute=False, duration=.01)
-        mouse.wheel(joysticks[1][1])
-        if joysticks[1][0] != 0:
-            keyboard.press("shift")
-            mouse.wheel(-joysticks[1][0])
-            keyboard.release("shift")
+        normal_keybinds()
 
     if mode == 'keyboard' and keyboard_open_time > 0:
         keyboard_open_time -= dt
@@ -163,20 +325,12 @@ def controller_loop():
     if mode == 'keyboard' and keyboard_open_time < 0:
         keyboard_controls()
     
-    if mode != 'disabled':
-        if button.L1.pressed and button.DOWN.rising_edge or button.L1.rising_edge and button.DOWN.pressed:
-            keyboard.send('ctrl+win+o')
-            keyboard_open_time = 0.5
-            mode = 'enabled' if mode == 'keyboard' else 'keyboard'
-
-        if button.L2.rising_edge: mouse.press('right')
-        if button.L2.falling_edge: mouse.release('right')
-
-        if button.R2.rising_edge: mouse.press('left')
-        if button.R2.falling_edge: mouse.release('left')
-
-    if button.L1.pressed and button.START.rising_edge or button.L1.rising_edge and button.START.pressed:
-        mode = 'enabled' if mode == 'disabled' else 'disabled'
+    if mode == 'disabled' and get_keys_active(config.get("enable_binding"), "new_press"):
+        mode = 'enabled'
+    
+    elif mode != 'disabled' and get_keys_active(config.get("disable_binding"), "new_press"):
+        if mode == 'keyboard': keyboard.send('ctrl+win+o')
+        mode = 'disabled'
 
     dt = time.time() - last
     last = time.time()

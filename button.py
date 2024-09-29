@@ -7,11 +7,10 @@ class Button:
         self.name = name
         self.special = any(i in self.name for i in ["TRIGGER", "JOYSTICK"])
         self.threshold = threshold
-        self.long_press_threshold = 1
         self.pressed = False
         self.rising_edge = False
         self.falling_edge = False
-        self.repeat_cooldown = 0.5
+        self.repeat_cooldown = 10.0
         self.hold_time = -1
         self.release_time = -1
         self.last_update_time = time.time()
@@ -37,14 +36,12 @@ class Button:
         self.falling_edge = self.pressed and not held
         self.pressed = held
         dt = time.time() - self.last_update_time
-        if self.repeat_cooldown < 0: self.repeat_cooldown = 0.1
         if self.pressed: 
             self.hold_time += dt
             self.repeat_cooldown -= dt
         else: self.release_time += dt
         if self.rising_edge: 
             self.hold_time = 0
-            self.repeat_cooldown = 0.5
         if self.falling_edge: self.release_time = 0
         self.last_update_time = time.time()
         
@@ -55,21 +52,30 @@ class Button:
     def get_new_press(self) -> bool:
         return self.rising_edge
     
-    def get_long_press(self) -> bool:
-        return self.pressed and self.hold_time >= self.long_press_threshold
+    def get_new_long_press(self, long_press_threshold = 1.0) -> bool:
+        return self.pressed and self.hold_time >= long_press_threshold
+    
+    def get_long_pressed(self, long_press_threshold = 1.0) -> bool:
+        return self.pressed and self.hold_time >= long_press_threshold
     
     def get_release(self) -> bool:
         return self.falling_edge
     
-    def get_short_release(self) -> bool:
-        return self.falling_edge and self.hold_time < self.long_press_threshold
+    def get_short_release(self, long_press_threshold = 1.0) -> bool:
+        return self.falling_edge and self.hold_time < long_press_threshold
     
-    def get_long_release(self) -> bool:
-        return self.falling_edge and self.hold_time >= self.long_press_threshold
+    def get_long_release(self, long_press_threshold = 1.0) -> bool:
+        return self.falling_edge and self.hold_time >= long_press_threshold
     
-    def get_repeated_new_press(self) -> bool:
-        return self.pressed and self.repeat_cooldown < 0 or self.rising_edge
-
+    def get_repeated_new_press(self, repeat_start_delay = 0.5, repeat_delay = 0.1) -> bool:
+        if self.rising_edge: 
+            self.repeat_cooldown = repeat_start_delay
+            return True
+        if self.pressed and self.repeat_cooldown < 0:
+            self.repeat_cooldown = repeat_delay
+            return True
+        return False
+    
 def update_all():
     LEFT_JOYSTICK_UP.update()
     LEFT_JOYSTICK_DOWN.update()
