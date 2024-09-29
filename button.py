@@ -9,6 +9,7 @@ class Button:
         self.pressed = False
         self.rising_edge = False
         self.falling_edge = False
+        self.clear_long_press = False
         self.repeat_cooldown = 10.0
         self.hold_time = -1
         self.release_time = -1
@@ -40,6 +41,9 @@ class Button:
             self.hold_time += dt
             self.repeat_cooldown -= dt
         else: self.release_time += dt
+        if self.clear_long_press:
+            self.clear_long_press = False
+            self.last_long_press_time = time.time()
         if self.rising_edge: 
             self.hold_time = 0
         if self.falling_edge: self.release_time = 0
@@ -55,7 +59,7 @@ class Button:
     def get_new_long_press(self, long_press_threshold = 1.0) -> bool:
         if self.pressed and self.hold_time >= long_press_threshold: 
             new_long_press = self.last_long_press_time <= time.time() - self.hold_time
-            self.last_long_press_time = time.time()
+            self.clear_long_press = True
             return new_long_press
         return False
     
