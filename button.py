@@ -1,4 +1,3 @@
-import XInput
 import time
 import utils
 
@@ -14,6 +13,7 @@ class Button:
         self.hold_time = -1
         self.release_time = -1
         self.last_update_time = time.time()
+        self.last_long_press_time = time.time()
     
     def update(self):
         if not self.special:
@@ -28,9 +28,9 @@ class Button:
             if self.name.startswith("RIGHT"): joystick = joysticks[1]
             
             if self.name.endswith("UP"): held = joystick[1] >= self.threshold
-            if self.name.endswith("DOWN"): held = joystick[1] <= -self.threshold
+            if self.name.endswith("DOWN"): held = -joystick[1] >= self.threshold
             if self.name.endswith("RIGHT"): held = joystick[0] >= self.threshold
-            if self.name.endswith("LEFT"): held = joystick[0] <= -self.threshold
+            if self.name.endswith("LEFT"): held = -joystick[0] >= self.threshold
         
         self.rising_edge = not self.pressed and held
         self.falling_edge = self.pressed and not held
@@ -53,7 +53,11 @@ class Button:
         return self.rising_edge
     
     def get_new_long_press(self, long_press_threshold = 1.0) -> bool:
-        return self.pressed and self.hold_time >= long_press_threshold
+        if self.pressed and self.hold_time >= long_press_threshold: 
+            new_long_press = self.last_long_press_time <= time.time() - self.hold_time
+            self.last_long_press_time = time.time()
+            return new_long_press
+        return False
     
     def get_long_pressed(self, long_press_threshold = 1.0) -> bool:
         return self.pressed and self.hold_time >= long_press_threshold

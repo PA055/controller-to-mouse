@@ -11,10 +11,10 @@
         "DOWN+START": "\\keyboard_toggle",
         "L2": "ctrl+a",
         "R2": {
-            "result": "\\type hello world!",
+            "result": ["\\type hello world!", "enter"],
             "trigger": "long_press",
             "threshold": 0.9,
-            "hold_threshold": 0.5 
+            "hold_threshold": 0.2 
         }
     },
     "keyboard_bindings": {

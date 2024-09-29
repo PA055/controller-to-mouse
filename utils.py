@@ -1,4 +1,5 @@
 import XInput, keyboard
+
 print("Checking for connected controllers...")
 if not any(XInput.get_connected()):
     controller_index = -1
@@ -8,8 +9,10 @@ else:
     print("Connected.")
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
+    global controller_index
     if controller_index >= 0:
-        return XInput.get_thumb_values(XInput.get_state(controller_index))
+        try: return XInput.get_thumb_values(XInput.get_state(controller_index))
+        except Exception: controller_index = -1
     
     lx_axis = keyboard.is_pressed("right") - keyboard.is_pressed("left")
     ly_axis = keyboard.is_pressed("up") - keyboard.is_pressed("down")
@@ -18,8 +21,10 @@ def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
     return (lx_axis, ly_axis), (rx_axis, ry_axis)
 
 def get_buttons() -> dict[str, bool]:
+    global controller_index
     if controller_index >= 0: 
-        return XInput.get_button_values(XInput.get_state(controller_index))
+        try: return XInput.get_button_values(XInput.get_state(controller_index))
+        except Exception: controller_index = -1
     
     return {
         "DPAD_UP": keyboard.is_pressed('t'),
@@ -39,5 +44,8 @@ def get_buttons() -> dict[str, bool]:
     }
 
 def get_triggers() -> tuple[float, float]:
-    if controller_index >= 0: return XInput.get_trigger_values(XInput.get_state(controller_index))
+    global controller_index
+    if controller_index >= 0: 
+        try: return XInput.get_trigger_values(XInput.get_state(controller_index))
+        except Exception: controller_index = -1
     return 1 if keyboard.is_pressed('x') else 0, 1 if keyboard.is_pressed('c') else 0
