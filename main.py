@@ -6,6 +6,7 @@ import math
 import win32gui
 import contextlib
 import button
+import sys
 from utils import *
 from config import config
 
@@ -344,18 +345,20 @@ def controller_loop():
     elif mode != 'disabled' and get_keys_active(config.get("disable_binding"), "new_press"):
         if mode == 'keyboard': keyboard.send('ctrl+win+o')
         mode = 'disabled'
+        
+    if get_keys_active(config.get("exit_binding"), "new_press"):
+        sys.exit(0)
 
     dt = time.time() - last
     last = time.time()
 
-if __name__ == "__main__":
-    try:
-        while True:
-            controller_loop()
-    except KeyboardInterrupt:
-        print("Exiting...")
-    finally:
-        keyboard.release("shift")
-        mouse.release('left')
-        # mouse.release('right')
+try:
+    while True:
+        controller_loop()
+except KeyboardInterrupt:
+    print("Exiting...")
+finally:
+    keyboard.release("shift")
+    mouse.release('left')
+    # mouse.release('right')
     

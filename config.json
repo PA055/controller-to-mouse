@@ -3,6 +3,7 @@
     "scroll_sensitivity": 0.5,
     "disable_binding": "UP+START",
     "enable_binding": "UP+START",
+    "exit_binding": "L1+L2+R1+R2+START+BACK",
     "mouse_joystick": "left",
     "scroll_joystick": "right",
     "bindings": {
