@@ -12,10 +12,13 @@
         "L2": "ctrl+a",
         "R2": {
             "result": ["\\type hello world!", "enter"],
-            "trigger": "long_press",
+            "trigger": "new_long_press",
             "threshold": 0.9,
             "hold_threshold": 0.2 
-        }
+        },
+        "Y": "backspace",
+        "B": "ctrl+z",
+        "RIGHT": "alt+tab"
     },
     "keyboard_bindings": {
         "R1": "\\left_click",

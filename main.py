@@ -192,14 +192,17 @@ def get_keys_active(keys: str, function: str = 'new_press', args: tuple = ()) ->
         ) 
     if function == 'pressed':
         return all(button.buttons[btn.strip().upper()].get_pressed() for btn in keys.split('+'))
-    if function == 'long_press':
-        return all(
-            button.buttons[btn.strip().upper()].get_long_pressed(*args)
-            for btn in keys.split('+')
-        ) and any(
+    if function == 'new_long_press':
+        return any(
             button.buttons[btn.strip().upper()].get_new_long_press(*args) 
             for btn in keys.split('+')
-        )        
+        ) and all(
+            button.buttons[btn.strip().upper()].get_new_long_press(*args) or \
+            button.buttons[btn.strip().upper()].get_long_pressed(*args) 
+            for btn in keys.split('+')
+        )
+    if function == 'long_press':
+        return all(button.buttons[btn.strip().upper()].get_long_pressed(*args) for btn in keys.split('+'))
 
 
     if function == 'release':
@@ -235,7 +238,6 @@ def get_keys_active(keys: str, function: str = 'new_press', args: tuple = ()) ->
     if function == 'repeat':
         return button.buttons[keys.split('+')[0].strip().upper()].get_repeated_new_press(*args) and \
                all(button.buttons[btn.strip().upper()].get_pressed() for btn in keys.split('+'))
-    
     return False
 
 def parse_result(result):
@@ -293,10 +295,7 @@ def normal_keybinds():
         if not isinstance(results, list): results = [results.lower()]
         else: results = [i.lower() for i in results]
         
-        if button.buttons['R2'].get_new_long_press(0.2) and (button.buttons['R2'].get_new_long_press(0.2) or button.buttons['R2'].get_long_pressed(0.2)): print("ahhh")
-        
         for result in results:
-
             if result in ['\\left_mouse', '\\right_mouse', '\\middle_mouse']:
                 if get_keys_active(keys, "new_press", args): mouse.press(result[1:-6])
                 if get_keys_active(keys, "release", args): mouse.release(result[1:-6])
