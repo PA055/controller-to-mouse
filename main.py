@@ -255,7 +255,7 @@ def parse_result(result):
         keyboard.send(result)
 
 def normal_keybinds():
-    global mode
+    global mode, keyboard_open_time, mouse_pos
     joysticks = get_joysticks()
     moveJoystick = joysticks[0 if config.get("mouse_joystick", 'left').lower() == "left" else 1]
     scrollJoystick = joysticks[0 if config.get("scroll_joystick", 'right').lower() == "left" else 1]
@@ -294,16 +294,17 @@ def normal_keybinds():
         if result == '\\keyboard_toggle' and get_keys_active(keys, trigger, args):
             keyboard.send('ctrl+win+o')
             keyboard_open_time = 0.5
+            mouse_pos = list(index_to_window(snap_keyboard(mouse.get_position())))
             mode = 'enabled' if mode == 'keyboard' else 'keyboard'
             
         if result == '\\keyboard_enable' and mode == 'enabled' and get_keys_active(keys, trigger, args):
             keyboard.send('ctrl+win+o')
             keyboard_open_time = 0.5
+            mouse_pos = list(index_to_window(snap_keyboard(mouse.get_position())))
             mode = 'keyboard'
         
         if result == '\\keyboard_disable' and mode == 'keyboard' and get_keys_active(keys, trigger, args):
             keyboard.send('ctrl+win+o')
-            keyboard_open_time = 0.5
             mode = 'enable'
             
         if get_keys_active(keys, trigger, args):
