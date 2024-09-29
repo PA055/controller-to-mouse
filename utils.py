@@ -1,6 +1,11 @@
 import XInput, keyboard
-if not any(XInput.get_connected()): controller_index = -1
-else: controller_index = XInput.get_connected().index(True)
+print("Checking for connected controllers...")
+if not any(XInput.get_connected()):
+    controller_index = -1
+    print("Failed to connect, try again later")
+else: 
+    controller_index = XInput.get_connected().index(True)
+    print("Connected.")
 
 def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
     if controller_index >= 0:

@@ -76,7 +76,7 @@ def keyboard_controls():
         
         if button.LEFT_JOYSTICK_UP.get_repeated_new_press() or button.LEFT_JOYSTICK_DOWN.get_repeated_new_press() or \
            button.LEFT_JOYSTICK_LEFT.get_repeated_new_press() or button.LEFT_JOYSTICK_RIGHT.get_repeated_new_press(): 
-            mouse_pos[0] += joysticks[0][0] * (width - 214) * (.5 * ((keyboard_map[i_y][0][i_x] - keyboard_map[i_y][0][i_x - 1]) if i_x > 0 else keyboard_map[i_y][0][i_x]) + 0.5 * ((keyboard_map[i_y][0][i_x + 1] - keyboard_map[i_y][0][i_x]) if i_x < len(keyboard_map[i_y][0] - 1) else keyboard_map[i_y][0][0]))
+            mouse_pos[0] += joysticks[0][0] * (width - 214) * (.5 * ((keyboard_map[i_y][0][i_x] - keyboard_map[i_y][0][i_x - 1]) if i_x > 0 else keyboard_map[i_y][0][i_x]) + 0.5 * ((keyboard_map[i_y][0][i_x + 1] - keyboard_map[i_y][0][i_x]) if i_x < len(keyboard_map[i_y][0]) - 1 else keyboard_map[i_y][0][0]))
             mouse_pos[1] -= joysticks[0][1] * 0.9 * keyboard_map[0][1] * height
             mouse.move(*mouse_pos)
         
@@ -182,13 +182,6 @@ def controller_loop():
     last = time.time()
 
 if __name__ == "__main__":
-    print("Checking for connected controllers...")
-    if not any(XInput.get_connected()): 
-        print("Failed to connect, try again later")
-        exit(1)
-    else:
-        print("Connected.")
-
     try:
         while True:
             controller_loop()
