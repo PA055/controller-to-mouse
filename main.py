@@ -3,7 +3,19 @@ import mouse
 import keyboard
 import time
 import win32gui
- 
+import contextlib
+import button
+from utils import *
+
+last = time.time()
+dt = .0
+mode = 'enabled'
+
+keyboard_open_time = 0.5
+keyboard_win_rect = (.0, .0, .0, .0)
+keyboard_index = [0, 0]
+
+
 sensitivity = 20
 keyboard_map = [
     ([.03866, .107388, .168385, .235395, .297251, .358247, .421821, .481959, .548969, .610825, .67268, .74055, .802405, .867698, .945876], .2292042), 
@@ -13,108 +25,155 @@ keyboard_map = [
     ([.037801, .103952, .165808, .232818, .44244, .643471, .705326, .769759, .832474, .898625, .962199], .811865)
 ]
 
-def get_joysticks() -> tuple[tuple[float, float], tuple[float, float]]:
-    if controller_index >= 0:
-        return XInput.get_thumb_values(XInput.get_state(controller_index))
     
-    lx_axis = keyboard.is_pressed("right") - keyboard.is_pressed("left")
-    ly_axis = keyboard.is_pressed("up") - keyboard.is_pressed("down")
-    rx_axis = keyboard.is_pressed("d") - keyboard.is_pressed("a")
-    ry_axis = keyboard.is_pressed("w") - keyboard.is_pressed("s")
-    return (lx_axis, ly_axis), (rx_axis, ry_axis)
-
-def get_buttons() -> dict[str, bool]:
-    if controller_index >= 0: 
-        return XInput.get_button_values(XInput.get_state(controller_index))
-    
-    return {
-        "DPAD_UP": keyboard.is_pressed('t'),
-        "DPAD_LEFT": keyboard.is_pressed('f'),
-        "DPAD_DOWN": keyboard.is_pressed('g'),
-        "DPAD_RIGHT": keyboard.is_pressed('h'),
-        "START": keyboard.is_pressed('='),
-        "BACK": keyboard.is_pressed('-'),
-        "LEFT_THUMB": keyboard.is_pressed('/'),
-        "RIGHT_THUMB": keyboard.is_pressed('.'),
-        "LEFT_SHOULDER": keyboard.is_pressed('q'),
-        "RIGHT_SHOULDER": keyboard.is_pressed('e'),
-        "A": keyboard.is_pressed('k'),
-        "B": keyboard.is_pressed('l'),
-        "X": keyboard.is_pressed('j'),
-        "Y": keyboard.is_pressed('i')
-    }
-
-def get_triggers() -> tuple[float, float]:
-    if controller_index >= 0: return XInput.get_trigger_values(XInput.get_state(controller_index))
-    return 1 if keyboard.is_pressed('x') else 0, 1 if keyboard.is_pressed('c') else 0
-
-import contextlib
-controller_index = -1
-print("Checking for connected controllers...")
-
-for _ in range(50):
-    if any(XInput.get_connected()): break
-    time.sleep(.1)
-if not any(XInput.get_connected()): 
-    print("Failed to connect, try again later")
-    # exit(1)
-else:
-    print("Connected.")
-    controller_index = XInput.get_connected().index(True)
-
-last = time.time()
-last_buttons = {key: False for key in get_buttons()}
-last_triggers = (.0, .0)
-dt = .0
-mode = 'enabled'
-
-keyboard_open_time = 0.5
-keyboard_win = None
-keyboard_win_rect = (.0, .0, .0, .0)
-keyboard_index = (0, 0)
-
-while True:
-    buttons = get_buttons()
-    LT, RT = get_triggers()
-    (LX, LY), (RX, RY) = get_joysticks()
+def keyboard_controls():
+    global keyboard_index
+    keyboard_win_rect = win32gui.GetWindowRect(keyboard_win)
+    if keyboard_index[1] >= 0 and keyboard_index[1] < len(keyboard_map) and \
+        keyboard_index[0] >= 0 and keyboard_index[0] < len(keyboard_map[keyboard_index[1]][0]):
+            width, height = keyboard_win_rect[2] - keyboard_win_rect[0], keyboard_win_rect[3] - keyboard_win_rect[1]
+            key_x = keyboard_win_rect[0] + (keyboard_map[keyboard_index[1]][0][keyboard_index[0]] * (width - 214))
+            key_y = keyboard_win_rect[1] + (keyboard_map[keyboard_index[1]][1] * (height)) + 30
+            
+            mouse.move(key_x, key_y)
+            if button.A.get_new_press(): mouse.click()
+            
+            if button.LEFT_JOYSTICK_UP.get_repeated_new_press(): 
+                keyboard_index[1] -= 1
+                mouse.move(key_x, keyboard_win_rect[1] + 60)
+                
+            if button.LEFT_JOYSTICK_DOWN.get_repeated_new_press(): 
+                keyboard_index[1] += 1
+                mouse.move(key_x, keyboard_win_rect[3] + 20)
+                
+            if button.LEFT_JOYSTICK_LEFT.get_repeated_new_press(): 
+                keyboard_index[0] -= 1
+                mouse.move(keyboard_win_rect[0] - 20, key_y)
+                
+            if button.LEFT_JOYSTICK_RIGHT.get_repeated_new_press(): 
+                keyboard_index[0] += 1
+                mouse.move(keyboard_win_rect[2] - 200, key_y)
+            
+            if button.B.get_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[0][0][14] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[0][1] * (height)) + 30
+                )
+                mouse.click()
+            
+            if button.Y.get_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][4] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+            
+            if button.X.get_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[3][0][0] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[3][1] * (height)) + 30
+                )
+                mouse.click()
+                
+            if button.UP.get_repeated_new_press() or button.RIGHT_JOYSTICK_UP.get_repeated_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[3][0][11] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[3][1] * (height)) + 30
+                )
+                mouse.click()
+                
+            if button.LEFT.get_repeated_new_press() or button.RIGHT_JOYSTICK_LEFT.get_repeated_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][7] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+                
+            if button.DOWN.get_repeated_new_press() or button.RIGHT_JOYSTICK_DOWN.get_repeated_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][8] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+                
+            if button.RIGHT.get_repeated_new_press() or button.RIGHT_JOYSTICK_RIGHT.get_repeated_new_press():
+                mouse.move(
+                    keyboard_win_rect[0] + (keyboard_map[4][0][9] * (width - 214)),
+                    keyboard_win_rect[1] + (keyboard_map[4][1] * (height)) + 30
+                )
+                mouse.click()
+            
+    else:
+        joysticks = get_joysticks()
+        mouse.move(joysticks[0][0] * sensitivity, joysticks[0][1] * -sensitivity, absolute=False, duration=.01)
+        mouse.wheel(joysticks[1][1])
+        if joysticks[1][0] != 0:
+            keyboard.press("shift")
+            mouse.wheel(-joysticks[1][0])
+            keyboard.release("shift")
+        print(mouse.get_position())
+        print(keyboard_win_rect)
+        if mouse.get_position()[0] > keyboard_win_rect[0] and \
+           mouse.get_position()[0] < keyboard_win_rect[2] - 220 and \
+           mouse.get_position()[1] > keyboard_win_rect[1] + 80 and \
+           mouse.get_position()[1] < keyboard_win_rect[3]:
+            keyboard_index[1] = max(0, min(len(keyboard_map) - 1, keyboard_index[1]))
+            keyboard_index[0] = max(0, min(len(keyboard_map[keyboard_index[1]][0]) - 1, keyboard_index[0]))
+                
+def controller_loop():
+    global last, dt, mode, keyboard_open_time, keyboard_win
+    button.update_all()
+    joysticks = get_joysticks()
     if mode == 'enabled':
-        mouse.move(LX * sensitivity, LY * -sensitivity, absolute=False, duration=.01)
-        if RY != 0: mouse.wheel(RY)
-        if RX != 0:
-            keyboard.press("SHIFT")
-            mouse.wheel(-RX)
-            keyboard.release("SHIFT")
+        mouse.move(joysticks[0][0] * sensitivity, joysticks[0][1] * -sensitivity, absolute=False, duration=.01)
+        mouse.wheel(joysticks[1][1])
+        if joysticks[1][0] != 0:
+            keyboard.press("shift")
+            mouse.wheel(-joysticks[1][0])
+            keyboard.release("shift")
 
     if mode == 'keyboard' and keyboard_open_time > 0:
         keyboard_open_time -= dt
         if keyboard_open_time < 0:
             with contextlib.suppress(Exception):
                 keyboard_win = win32gui.FindWindow(None, "On-Screen Keyboard")
-                keyboard_win_rect = win32gui.GetWindowRect(keyboard_win)
         
     if mode == 'keyboard' and keyboard_open_time < 0:
-        width, height  = keyboard_win_rect[2] - keyboard_win_rect[0], keyboard_win_rect[3] - keyboard_win_rect[1]
-        key_x = keyboard_win_rect[0] + (keyboard_map[keyboard_index[1]][0][keyboard_index[0]] * (width - 214))
-        key_y = keyboard_win_rect[1] + (keyboard_map[keyboard_index[1]][1] * (height)) + 30
-        mouse.move(key_x, key_y)
-         
+        keyboard_controls()
+    
     if mode != 'disabled':
-        if (not (last_buttons["DPAD_DOWN"] and last_buttons["LEFT_SHOULDER"])) and buttons["DPAD_DOWN"] and buttons["LEFT_SHOULDER"]:
+        if button.L1.pressed and button.DOWN.rising_edge or button.L1.rising_edge and button.DOWN.pressed:
             keyboard.send('ctrl+win+o')
             keyboard_open_time = 0.5
             mode = 'enabled' if mode == 'keyboard' else 'keyboard'
 
-        if LT >= .3 and last_triggers[0] < .3: mouse.press('right')
-        if LT <= .3 and last_triggers[0] > .3: mouse.release('right')
+        if button.L2.rising_edge: mouse.press('right')
+        if button.L2.falling_edge: mouse.release('right')
 
-        if RT >= .3 and last_triggers[1] < .3: mouse.press('left')
-        if RT <= .3 and last_triggers[1] > .3: mouse.release('left')
+        if button.R2.rising_edge: mouse.press('left')
+        if button.R2.falling_edge: mouse.release('left')
 
-    if buttons["START"] and buttons["LEFT_SHOULDER"] and not (last_buttons["START"] and last_buttons["LEFT_SHOULDER"]):
+    if button.L1.pressed and button.START.rising_edge or button.L1.rising_edge and button.START.pressed:
         mode = 'enabled' if mode == 'disabled' else 'disabled'
 
     dt = time.time() - last
     last = time.time()
-    last_buttons = buttons
-    last_triggers = (LT, RT)
-        
+
+if __name__ == "__main__":
+    print("Checking for connected controllers...")
+    if not any(XInput.get_connected()): 
+        print("Failed to connect, try again later")
+        exit(1)
+    else:
+        print("Connected.")
+
+    try:
+        while True:
+            controller_loop()
+    except KeyboardInterrupt:
+        print("Exiting...")
+    finally:
+        keyboard.release("shift")
+        mouse.release('left')
+        mouse.release('right')
+    

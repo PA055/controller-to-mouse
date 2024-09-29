@@ -2,5 +2,6 @@ XInput-Python
 mouse
 keyboard
 types-keyboard
+types-pywin32
 cx_Freeze
 pywin32
