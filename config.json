@@ -9,7 +9,6 @@
         "L1": "\\right_click",
         "R1": "\\left_mouse",
         "DOWN+START": "\\keyboard_toggle",
-        "L2": "ctrl+a",
         "R2": {
             "result": ["\\type hello world!", "enter"],
             "trigger": "new_long_press",
@@ -18,7 +17,11 @@
         },
         "Y": "backspace",
         "B": "ctrl+z",
-        "RIGHT": "alt+tab"
+        "L2": {
+            "result": "alt",
+            "trigger": "hold"
+        },
+        "RIGHT": "tab"
     },
     "keyboard_bindings": {
         "R1": "\\left_click",

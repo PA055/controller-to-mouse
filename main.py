@@ -300,6 +300,10 @@ def normal_keybinds():
                 if get_keys_active(keys, "new_press", args): mouse.press(result[1:-6])
                 if get_keys_active(keys, "release", args): mouse.release(result[1:-6])
                 
+            if trigger == 'hold':
+                if get_keys_active(keys, "new_press", args): keyboard.press(result)
+                if get_keys_active(keys, "release", args): keyboard.release(result)
+                
             if result == '\\keyboard_toggle' and get_keys_active(keys, trigger, args):
                 keyboard.send('ctrl+win+o')
                 keyboard_open_time = 0.5
