@@ -1,13 +1,12 @@
 # Controller to Mouse
 ## About the program
-
-    This program reads controller inputs and translates them into keyboard and mouse functions.
+This program reads controller inputs and translates them into keyboard and mouse functions.
 
 ## Installation
-    download all of the files and unzip them in a place of your choosing, then right click the folder the files are in and select "open in terminal" then run `pip install -r requirements.txt --user`
+unzip the file in a directory of your choosing, and then run main.exe as an administrator
 
 ## How to use it
-    After installing plug your controller into the device and run the program as an administrator 
+After installing plug your controller into the device and run the program as an administrator 
     
 ## Configurations
 `config.json` is where the configurations are located  
